@@ -25,10 +25,6 @@ def login():
     else:
         return render_template('login.html')
 
-@app.route('/board')
-def viewBoard():
-    return render_template('board.html')
-
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
     if request.method =="POST":
@@ -48,14 +44,28 @@ def signup():
 def viewboard():
     conn = connectdb()
     cursor = conn.cursor()
-    query = "select * from boardtable"
+    query = f"select * from boardtable;"
     cursor.execute(query)
     board_data = cursor.fetchall
     conn.commit()
     conn.close()
     return render_template('board.html', board_data=board_data)
 
-
+@app.route('/write', methods=['POST', 'GET'])
+def writepost():
+    if request.method =="POST":
+        title = request.form['title']
+        content = request.form['content']
+        username = request.form['username']
+        conn = connectdb()
+        cursor = conn.cursor()
+        query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
+        cursor.execute(query)
+        conn.commit()
+        conn.close()
+        return render_template('board.html')
+    else:
+        return render_template('write.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

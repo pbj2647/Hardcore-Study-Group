@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <title>게시글작성</title>
+    </head>
+    <body>
+        <h1>글작성</h1> 
+        <form method="POST" action="/write">
+            title : <br><input type="text" name="title" maxlength="20" required><br>
+            username : <br><input type="text" name="username" maxlength="15" required><br>
+            content : <br><textarea name="content" rows="10" cols="50" maxlength="200" required></textarea><br>
+            <button type="submit">작성</button>
+            <button onclick="location.href='/board'">뒤로</button>
+        </form>
+    </body>
+</html>
