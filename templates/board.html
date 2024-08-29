@@ -3,11 +3,33 @@
     <head>
         <meta charset="UTF-8">
         <title>게시판</title>
+        <style>
+            table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            }
+        </style>
     </head>
     <body>
         <h1>게시판</h1>
         <table>
-            
-        </table>        
+            <thead>
+                <tr height="50">
+                    <th width="100">ID</th>
+                    <th width="300">Title</th>
+                    <th width="100">Username</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for board_data in board_datas %}
+                <tr>
+                    <td>{{ board_data[0] }}</td>
+                    <td>{{ board_data[1] }}</td>
+                    <td>{{ board_data[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table><br>
+        <button onclick="location.href='/write'">작성</button>      
     </body>
 </html>

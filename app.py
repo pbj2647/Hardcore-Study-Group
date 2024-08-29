@@ -46,10 +46,11 @@ def viewboard():
     cursor = conn.cursor()
     query = f"select * from boardtable;"
     cursor.execute(query)
-    board_data = cursor.fetchall
+    board_data = cursor.fetchall()
+    print(board_data)
     conn.commit()
     conn.close()
-    return render_template('board.html', board_data=board_data)
+    return render_template('board.html', board_datas=board_data)
 
 @app.route('/write', methods=['POST', 'GET'])
 def writepost():
@@ -63,7 +64,7 @@ def writepost():
         cursor.execute(query)
         conn.commit()
         conn.close()
-        return render_template('board.html')
+        return redirect(url_for('viewboard'))   
     else:
         return render_template('write.html')
 
