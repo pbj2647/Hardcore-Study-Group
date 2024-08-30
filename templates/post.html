@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <title>게시글 {{ post_data[0] }}</title>
+    </head>
+    <body>
+        <h1>{{ post_data[1] | safe }}</h1>
+        username : <br>{{ post_data[2] }}<br><br>
+        writetime : <br>{{ post_data[5] }}<br><br>
+        content : <br>{{ post_data[3] | safe }}<br><br>
+        <button onclick="location.href='/board'">목록으로</button>
+    </body>
+</html>

@@ -16,12 +16,16 @@ def connectdb():
 def main():
     return redirect(url_for('login'))
 
+@app.route('/loginrequire')
+def loginrequire():
+    return render_template('loginrequire.html')
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method =="POST":
         username = request.form['username']
         passwd = request.form['passwd']
-        return render_template('board.html')
+        return viewboard()
     else:
         return render_template('login.html')
 
@@ -47,7 +51,6 @@ def viewboard():
     query = f"select * from boardtable;"
     cursor.execute(query)
     board_data = cursor.fetchall()
-    print(board_data)
     conn.commit()
     conn.close()
     return render_template('board.html', board_datas=board_data)
@@ -67,6 +70,18 @@ def writepost():
         return redirect(url_for('viewboard'))   
     else:
         return render_template('write.html')
+    
+@app.route('/post', methods=['GET'])
+def viewpost():
+    arg = request.args.get('id')
+    conn = connectdb()
+    cursor = conn.cursor()
+    query = f"select * from boardtable where id='{arg}';"
+    cursor.execute(query)
+    post_data = cursor.fetchone()
+    conn.commit()
+    conn.close()
+    return render_template('post.html', post_data=post_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
