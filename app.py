@@ -25,7 +25,15 @@ def login():
     if request.method =="POST":
         username = request.form['username']
         passwd = request.form['passwd']
-        return viewboard()
+        conn = connectdb()
+        cursor = conn.cursor()
+        query = f"select * from usertable where username='{username}' and passwd='{passwd}';"
+        cursor.execute(query)
+        if cursor.execute(query):
+            return redirect(url_for('viewboard'))   
+        else:            
+            return render_template('login.html')
+        
     else:
         return render_template('login.html')
 
@@ -48,7 +56,11 @@ def signup():
 def viewboard():
     conn = connectdb()
     cursor = conn.cursor()
-    query = f"select * from boardtable;"
+    keyword = request.args.get('keyword', '').strip()
+    if not keyword:
+        query = f"select * from boardtable;"
+    else:
+        query = f"select * from boardtable where title like '%{keyword}%' or content like '%{keyword}%' ;"
     cursor.execute(query)
     board_data = cursor.fetchall()
     conn.commit()
