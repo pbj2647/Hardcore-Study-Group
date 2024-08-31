@@ -57,10 +57,18 @@ def viewboard():
     conn = connectdb()
     cursor = conn.cursor()
     keyword = request.args.get('keyword', '').strip()
+    index = request.args.get('index')
     if not keyword:
         query = f"select * from boardtable;"
     else:
-        query = f"select * from boardtable where title like '%{keyword}%' or content like '%{keyword}%' ;"
+        if index == "all":
+            query = f"select * from boardtable where title like '%{keyword}%' or content like '%{keyword}%' or username like '%{keyword}%';"
+        elif index == "title":
+            query = f"select * from boardtable where title like '%{keyword}%';"
+        elif index == "content":
+            query = f"select * from boardtable where content like '%{keyword}%';"
+        elif index == "username":
+            query = f"select * from boardtable where username like '%{keyword}%';"
     cursor.execute(query)
     board_data = cursor.fetchall()
     conn.commit()
