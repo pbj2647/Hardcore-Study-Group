@@ -30,8 +30,12 @@ def login():
         query = f"select * from usertable where username='{username}' and passwd='{passwd}';"
         cursor.execute(query)
         if cursor.execute(query):
+            conn.commit()
+            conn.close()
             return redirect(url_for('viewboard'))   
-        else:            
+        else:
+            conn.commit()
+            conn.close()            
             return render_template('login.html')
         
     else:
