@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, render_template
+from flask import Flask, request, session, flash, redirect, url_for, render_template
 import pymysql
 import jwt
 
@@ -33,7 +33,7 @@ def login():
         cursor = conn.cursor()
         query = f"select * from usertable where username='{username}' and passwd='{passwd}';"
         cursor.execute(query)
-        data = cursor.fetchone
+        data = cursor.fetchone()
         conn.commit()
         conn.close()
         if data:
@@ -66,6 +66,30 @@ def signup():
     else:
         return render_template('signup.html')
     
+@app.route('/change_passwd', methods=['POST', 'GET'])
+def change_passwd():
+    if 'Hardcore_token' in session:
+        if request.method =="POST":
+            Hardcore_token = session['Hardcore_token']
+            username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
+            new_passwd = request.form['new_passwd']
+            confirm_new_passwd = request.form['confirm_new_passwd']
+            conn = connectdb()
+            cursor = conn.cursor()
+            if new_passwd == confirm_new_passwd:
+                query = f"update usertable set passwd = '{new_passwd}' where username = '{username}'"
+                cursor.execute(query)
+                conn.commit()
+                conn.close()
+                return redirect(url_for('viewboard'))
+            else:
+                flash('새 비밀번호와 비밀번호 확인이 일치하지 않습니다')
+                return render_template('passwd_check_error.html')
+        else:
+            return render_template('change_passwd.html') 
+    else:
+        return render_template('loginrequire.html')
+    
 @app.route('/board', methods=['GET'])
 def viewboard():
     if 'Hardcore_token' in session:
@@ -96,9 +120,10 @@ def viewboard():
 def writepost():
     if 'Hardcore_token' in session:
         if request.method =="POST":
+            decoded_session = jwt.decode({'username': username}, JWT_SECRET_KEY, algorithm='HS256')
             title = request.form['title']
             content = request.form['content']
-            username = session['username']
+            username = decoded_session['username']
             conn = connectdb()
             cursor = conn.cursor()
             query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
@@ -112,16 +137,54 @@ def writepost():
         return render_template('loginrequire.html')
     
 @app.route('/modify', methods=['POST', 'GET'])
+def modify_post():
+    if 'Hardcore_token' in session:
+        if request.method =="POST":
+            Hardcore_token = session['Hardcore_token']
+            username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
+            modify_username = request.form['username']
+            post_id = request.form['post_id']
+            modify_title = request.form['title']
+            modify_content = request.form['content']
+            if username == modify_username:
+                conn = connectdb()
+                cursor = conn.cursor()
+                query = f"update boardtable set title = '{modify_title}', content = '{modify_content}' where id = '{post_id}';"
+                cursor.execute(query)
+                conn.commit()
+                conn.close()
+                return redirect(url_for('viewpost', id = post_id))
+            else:
+                flash('새 비밀번호와 비밀번호 확인이 일치하지 않습니다')
+                return render_template('passwd_check_error.html')
+        else:
+            post_id = request.args.get('id')
+            conn = connectdb()
+            cursor = conn.cursor()
+            query = f"select * from boardtable where id='{post_id}';"
+            cursor.execute(query)
+            post_data = cursor.fetchone()
+            conn.commit()
+            conn.close()
+            return render_template('modify.html', post_data=post_data) 
+    else:
+        return render_template('loginrequire.html')
 
 @app.route('/delete', methods=['POST', 'GET'])
-    
+def delete_post():
+    if 'Hardcore_token' in session:
+        post_id = request.args.get('id')
+
+    else:
+        return render_template('loginrequire.html')
+
 @app.route('/post', methods=['GET'])
 def viewpost():
     if 'Hardcore_token' in session:    
-        arg = request.args.get('id')
+        post_id = request.args.get('id')
         conn = connectdb()
         cursor = conn.cursor()
-        query = f"select * from boardtable where id='{arg}';"
+        query = f"select * from boardtable where id='{post_id}';"
         cursor.execute(query)
         post_data = cursor.fetchone()
         conn.commit()

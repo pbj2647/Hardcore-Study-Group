@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <title>패스워드 변경</title>
+    </head>
+    <body>
+        <h1>패스워드 변경</h1> 
+        <form method="POST" action="/change_passwd">
+            Current Passwd : <input type="passwd" name="current_passwd" maxlength="15" required><br>
+            New Passwd : <input type="password" name="new_passwd" maxlength="20" required><br>
+            Confirm New Passwd : <input type="password" name="confirm_new_passwd" maxlength="20" required><br>
+            <button type="submit">패스워드 변경</button>
+            <button onclick="location.href='/board'">취소</button>
+        </form>
+    </body>
+</html>
