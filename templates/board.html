@@ -12,6 +12,14 @@
     </head>
     <body>
         <h1>게시판</h1><button onclick="location.href='/logout'">로그아웃</button>&nbsp;<button onclick="location.href='/change_passwd'">패스워드 변경</button><br><br>
+        <form action="/board">
+            <select name="sorting_index" onchange="this.form.submit()" value="option">
+                <option value="">sorting</option>
+                <option value="id">id</option>
+                <option value="title">title</option>
+                <option value="username">username</option>
+            </select>
+        </form><br>
         <table>
             <thead>
                 <tr height="50">

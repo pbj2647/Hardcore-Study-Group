@@ -97,17 +97,23 @@ def viewboard():
         cursor = conn.cursor()
         keyword = request.args.get('keyword', '').strip()
         index = request.args.get('index')
+        sorting_index = request.args.get('sorting_index')
         if not keyword:
-            query = f"select * from boardtable;"
+            query = f"select * from boardtable"
         else:
             if index == "all":
-                query = f"select * from boardtable where title like '%{keyword}%' or content like '%{keyword}%' or username like '%{keyword}%';"
+                query = f"select * from boardtable where title like '%{keyword}%' or content like '%{keyword}%' or username like '%{keyword}%'"
             elif index == "title":
-                query = f"select * from boardtable where title like '%{keyword}%';"
+                query = f"select * from boardtable where title like '%{keyword}%'"
             elif index == "content":
-                query = f"select * from boardtable where content like '%{keyword}%';"
+                query = f"select * from boardtable where content like '%{keyword}%'"
             elif index == "username":
-                query = f"select * from boardtable where username like '%{keyword}%';"
+                query = f"select * from boardtable where username like '%{keyword}%'"
+        if sorting_index is not None:
+            query += f" order by {sorting_index};"
+        else:
+            query += ";"
+        print(query)
         cursor.execute(query)
         board_data = cursor.fetchall()
         conn.commit()
