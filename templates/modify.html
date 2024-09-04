@@ -5,7 +5,6 @@
         <title>게시글수정</title>
     </head>
     <body>
-        <h1>글수정</h1> 
         <form method="POST" action="/modify">
             title : <br><input type="text" name="title" maxlength="20" value = "{{ post_data[1] }}" required><br>
             content : <br><textarea name="content" rows="10" cols="50" maxlength="200" required>{{ post_data[3] }}</textarea><br>

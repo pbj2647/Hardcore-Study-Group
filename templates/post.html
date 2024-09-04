@@ -9,7 +9,7 @@
         username : <br>{{ post_data[2] }}<br><br>
         writetime : <br>{{ post_data[5] }}<br><br>
         content : <br>{{ post_data[3] | safe }}<br><br>
-        <button onclick="location.href='/modify?id={{ post_data[0] }}'">수정</button>&nbsp;<button onclick="location.href='/delete?id{{ post_data[0] }}'">삭제</button><br><br>
+        <button onclick="location.href='/modify?id={{ post_data[0] }}'">수정</button>&nbsp;<button onclick="location.href='/delete?id={{ post_data[0] }}'">삭제</button><br><br>
         <button onclick="location.href='/board'">목록으로</button>
     </body>
 </html>

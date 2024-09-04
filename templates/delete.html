@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <title>게시글 삭제</title>
+    </head>
+    <body>
+        <script>
+            function checkdelete() {
+                var check = confirm("정말 삭제하시겠습니까?")
+                if (check){
+                    document.getElementById('delete_post').submit();
+                } else {
+                    window.location.href = '/post?id={{ post_id }}';
+                }
+            }
+        </script>
+        <form method="POST" id="delete_post" action="/delete">
+            <input type="hidden" name="post_id" value ="{{ post_id }}">
+            <script>
+                checkdelete()
+            </script>
+        </form>
+    </body>

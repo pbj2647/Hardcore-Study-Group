@@ -155,7 +155,6 @@ def modify_post():
                 conn.close()
                 return redirect(url_for('viewpost', id = post_id))
             else:
-                flash('새 비밀번호와 비밀번호 확인이 일치하지 않습니다')
                 return render_template('passwd_check_error.html')
         else:
             post_id = request.args.get('id')
@@ -173,8 +172,18 @@ def modify_post():
 @app.route('/delete', methods=['POST', 'GET'])
 def delete_post():
     if 'Hardcore_token' in session:
-        post_id = request.args.get('id')
-
+        if request.method =="POST":
+            post_id = request.form['post_id']
+            conn = connectdb()
+            cursor = conn.cursor()
+            query = f"delete from boardtable where id = '{post_id}';"
+            cursor.execute(query)
+            conn.commit()
+            conn.close()
+            return redirect(url_for('viewboard'))
+        else:
+            post_id = request.args.get('id')
+            return render_template('delete.html', post_id=post_id) 
     else:
         return render_template('loginrequire.html')
 
