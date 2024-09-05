@@ -22,7 +22,7 @@ def main():
 
 @app.route('/loginrequire')
 def loginrequire():
-    return render_template('loginrequire.html')
+    return render_template('error_page/loginrequire.html')
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -84,11 +84,11 @@ def change_passwd():
                 return redirect(url_for('viewboard'))
             else:
                 flash('새 비밀번호와 비밀번호 확인이 일치하지 않습니다')
-                return render_template('passwd_check_error.html')
+                return render_template('error_page/passwd_check_error.html')
         else:
             return render_template('change_passwd.html') 
     else:
-        return render_template('loginrequire.html')
+        return render_template('error_page/loginrequire.html')
     
 @app.route('/board', methods=['GET'])
 def viewboard():
@@ -113,23 +113,22 @@ def viewboard():
             query += f" order by {sorting_index};"
         else:
             query += ";"
-        print(query)
         cursor.execute(query)
         board_data = cursor.fetchall()
         conn.commit()
         conn.close()
         return render_template('board.html', board_datas=board_data)
     else:
-        return render_template('loginrequire.html')
+        return render_template('error_page/loginrequire.html')
 
 @app.route('/write', methods=['POST', 'GET'])
 def writepost():
     if 'Hardcore_token' in session:
         if request.method =="POST":
-            decoded_session = jwt.decode({'username': username}, JWT_SECRET_KEY, algorithm='HS256')
+            Hardcore_token = session['Hardcore_token']
+            username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
             title = request.form['title']
             content = request.form['content']
-            username = decoded_session['username']
             conn = connectdb()
             cursor = conn.cursor()
             query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
@@ -140,7 +139,7 @@ def writepost():
         else:
             return render_template('write.html')
     else:
-        return render_template('loginrequire.html')
+        return render_template('error_page/loginrequire.html')
     
 @app.route('/modify', methods=['POST', 'GET'])
 def modify_post():
@@ -161,7 +160,7 @@ def modify_post():
                 conn.close()
                 return redirect(url_for('viewpost', id = post_id))
             else:
-                return render_template('passwd_check_error.html')
+                return render_template('error_page/passwd_check_error.html')
         else:
             post_id = request.args.get('id')
             conn = connectdb()
@@ -173,25 +172,33 @@ def modify_post():
             conn.close()
             return render_template('modify.html', post_data=post_data) 
     else:
-        return render_template('loginrequire.html')
+        return render_template('error_page/loginrequire.html')
 
 @app.route('/delete', methods=['POST', 'GET'])
 def delete_post():
     if 'Hardcore_token' in session:
         if request.method =="POST":
+            Hardcore_token = session['Hardcore_token']
+            username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
             post_id = request.form['post_id']
             conn = connectdb()
             cursor = conn.cursor()
-            query = f"delete from boardtable where id = '{post_id}';"
-            cursor.execute(query)
-            conn.commit()
-            conn.close()
-            return redirect(url_for('viewboard'))
+            query1 = f"select username from boardtable where id = '{post_id}';"
+            query2 = f"delete from boardtable where id = '{post_id}';"
+            cursor.execute(query1)
+            data = cursor.fetchone()[0]
+            if data == username:
+                cursor.execute(query2)
+                conn.commit()
+                conn.close()
+                return redirect(url_for('viewboard'))
+            else:
+                return render_template('error_page/delete_error.html', post_id = post_id)
         else:
             post_id = request.args.get('id')
             return render_template('delete.html', post_id=post_id) 
     else:
-        return render_template('loginrequire.html')
+        return render_template('error_page/loginrequire.html')
 
 @app.route('/post', methods=['GET'])
 def viewpost():
@@ -206,7 +213,7 @@ def viewpost():
         conn.close()
         return render_template('post.html', post_data=post_data)
     else:
-        return render_template('loginrequire.html')
+        return render_template('error_page/loginrequire.html')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
