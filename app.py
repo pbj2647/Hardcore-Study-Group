@@ -129,9 +129,14 @@ def writepost():
             username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
             title = request.form['title']
             content = request.form['content']
+            file = request.files['file']
             conn = connectdb()
             cursor = conn.cursor()
-            query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
+            if file:
+                file.save('./uploads/' + file.filename)
+                query = f"insert into boardtable (title, content, username, filename) values ('{title}', '{content}', '{username}' ,'{file.filename}');"
+            else:
+                query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
             cursor.execute(query)
             conn.commit()
             conn.close()
@@ -151,10 +156,15 @@ def modify_post():
             post_id = request.form['post_id']
             modify_title = request.form['title']
             modify_content = request.form['content']
+            modify_file = request.files['file']
             if username == modify_username:
                 conn = connectdb()
                 cursor = conn.cursor()
-                query = f"update boardtable set title = '{modify_title}', content = '{modify_content}' where id = '{post_id}';"
+                if modify_file:
+                    modify_file.save('./uploads/' + modify_file.filename)
+                    query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}' where id = '{post_id}';"
+                else:
+                    query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null where id = '{post_id}';"
                 cursor.execute(query)
                 conn.commit()
                 conn.close()
@@ -214,6 +224,11 @@ def viewpost():
         return render_template('post.html', post_data=post_data)
     else:
         return render_template('error_page/loginrequire.html')
+    
+@app.route('/post/donwload', methods=['POST'])
+def download():
+    return
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)

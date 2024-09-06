@@ -6,9 +6,10 @@
     </head>
     <body>
         <h1>글작성</h1> 
-        <form method="POST" action="/write">
+        <form method="POST" action="/write" enctype="multipart/form-data">
             title : <br><input type="text" name="title" maxlength="20" required><br>
             content : <br><textarea name="content" rows="10" cols="50" maxlength="200" required></textarea><br>
+            file : <br><input type="file" name="file"><br><br>
             <button type="submit">작성</button>
             <button onclick="location.href='/board'">뒤로</button>
         </form>
