@@ -1,18 +1,79 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <title>게시글 {{ post_data[0] }}</title>
-    </head>
-    <body>
-        <h1>{{ post_data[1] | safe }}</h1>
-        username : <br>{{ post_data[2] }}<br><br>
-        writetime : <br>{{ post_data[5] }}<br><br>
-        content : <br>{{ post_data[3] | safe }}<br><br>
-        <form action="/post/download" method="POST" enctype = "multipart/form-data">
-        file : <br>{{ post_data[4] }}<br>
-        </form><br>
-        <button onclick="location.href='/modify?id={{ post_data[0] }}'">수정</button>&nbsp;<button onclick="location.href='/delete?id={{ post_data[0] }}'">삭제</button><br><br>
-        <button onclick="location.href='/board'">목록으로</button>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>게시글 {{ post_data[0] }}</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .post-container {
+            border: 1px solid black;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .post-meta {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .post-body {
+            margin-bottom: 20px;
+        }
+        .post-file {
+            margin-bottom: 15px;
+        }
+        button {
+            margin-right: 10px;
+        }
+        .btn-back {
+            margin-top: 10px;
+        }
+        .btn-sm-custom {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="post-container">
+                <h1>{{ post_data[1] | safe }}</h1>
+                <div class="post-meta">
+                    <span><strong>작성자:</strong> {{ post_data[2] }}</span><br>
+                    <span><strong>작성 시간:</strong> {{ post_data[5] }}</span>
+                </div>
+                <div class="post-body">
+                    <p>{{ post_data[3] | safe }}</p>
+                </div>
+                <div class="post-file">
+                    <strong>첨부 파일:</strong>
+                    <button class="btn btn-outline-secondary btn-sm-custom" onclick="checkfile()">{{ post_data[4] or '없음' }}</button>
+                </div>
+                <script>
+                    function checkfile() {
+                        var filename = "{{ post_data[4] }}";
+                        if (!filename || filename === 'None') {
+                            alert('파일이 없습니다.');
+                        } else {
+                            window.location.href = "/post/download?filename=" + filename;
+                        }
+                    }
+                </script>
+                <div>
+                    <button class="btn btn-warning btn-sm-custom" onclick="location.href='/modify?id={{ post_data[0] }}'">수정</button>
+                    <button class="btn btn-danger btn-sm-custom" onclick="location.href='/delete?id={{ post_data[0] }}'">삭제</button>
+                </div>
+                <button class="btn btn-primary btn-back btn-sm-custom" onclick="location.href='/board'">목록으로</button>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap 5 JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

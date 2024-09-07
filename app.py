@@ -1,4 +1,4 @@
-from flask import Flask, request, session, flash, redirect, url_for, render_template
+from flask import Flask, request, session, flash, redirect, url_for, send_file, render_template
 import pymysql
 import jwt
 
@@ -6,6 +6,8 @@ app = Flask(__name__)
 app.secret_key = "app_Hardcore"
 JWT_SECRET_KEY = "jwt_Hardcore"
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
+
+upload_folder = './uploads/'
 
 def connectdb():
     conn = pymysql.connect(host='localhost',
@@ -133,7 +135,7 @@ def writepost():
             conn = connectdb()
             cursor = conn.cursor()
             if file:
-                file.save('./uploads/' + file.filename)
+                file.save(upload_folder + file.filename)
                 query = f"insert into boardtable (title, content, username, filename) values ('{title}', '{content}', '{username}' ,'{file.filename}');"
             else:
                 query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
@@ -161,7 +163,7 @@ def modify_post():
                 conn = connectdb()
                 cursor = conn.cursor()
                 if modify_file:
-                    modify_file.save('./uploads/' + modify_file.filename)
+                    modify_file.save(upload_folder + modify_file.filename)
                     query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}' where id = '{post_id}';"
                 else:
                     query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null where id = '{post_id}';"
@@ -225,10 +227,14 @@ def viewpost():
     else:
         return render_template('error_page/loginrequire.html')
     
-@app.route('/post/donwload', methods=['POST'])
+@app.route('/post/download', methods=['GET'])
 def download():
-    return
-
+    if 'Hardcore_token' in session:
+        filename = request.args.get('filename')
+        file_path = upload_folder + filename
+        return send_file(file_path, as_attachment=True)
+    else:
+        return render_template('error_page/loginrequire.html')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)

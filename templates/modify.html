@@ -2,17 +2,34 @@
 <html lang="ko">
     <head>
         <meta charset="UTF-8">
-        <title>게시글수정</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>게시글 수정</title>
+        <!-- Bootstrap 5 CSS CDN -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
-    <body>
+    <body class="container mt-5">
+        <h1 class="mb-4">게시글 수정</h1>
         <form method="POST" action="/modify" enctype="multipart/form-data">
-            title : <br><input type="text" name="title" maxlength="20" value = "{{ post_data[1] }}" required><br>
-            content : <br><textarea name="content" rows="10" cols="50" maxlength="200" required>{{ post_data[3] }}</textarea><br>
-            file : <br><input type="file" name="file" value = "{{ post_data[4] }}"><br><br>
-            <input type="hidden" name="post_id" value ="{{ post_data[0]}}">
-            <input type="hidden" name="username" value ="{{ post_data[2]}}">
-            <button type="submit">수정</button>
-            <button onclick="location.href='/post?id={{ post_data[0] }}'">취소</button>
+            <div class="mb-3">
+                <label for="title" class="form-label">제목</label>
+                <input type="text" class="form-control" id="title" name="title" maxlength="20" value="{{ post_data[1] }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">내용</label>
+                <textarea class="form-control" id="content" name="content" rows="10" maxlength="200" required>{{ post_data[3] }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="file" class="form-label">파일 첨부</label>
+                <input class="form-control" type="file" id="file" name="file" value="{{ post_data[4] }}">
+            </div>
+            <input type="hidden" name="post_id" value="{{ post_data[0] }}">
+            <input type="hidden" name="username" value="{{ post_data[2] }}">
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">수정</button>
+                <button type="button" class="btn btn-secondary" onclick="location.href='/post?id={{ post_data[0] }}'">취소</button>
+            </div>
         </form>
+        <!-- Bootstrap 5 JS and Popper.js -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>
