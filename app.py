@@ -172,7 +172,7 @@ def modify_post():
                 conn.close()
                 return redirect(url_for('viewpost', id = post_id))
             else:
-                return render_template('error_page/passwd_check_error.html')
+                return render_template('error_page/not_write_user.html', id = post_id)
         else:
             post_id = request.args.get('id')
             conn = connectdb()
