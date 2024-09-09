@@ -1,13 +1,16 @@
 from flask import Flask, request, session, flash, redirect, url_for, send_file, render_template
+from pymysql.err import IntegrityError
 import pymysql
 import jwt
+import os
 
 app = Flask(__name__)
 app.secret_key = "app_Hardcore"
-JWT_SECRET_KEY = "jwt_Hardcore"
+JWT_SECRET_KEY = os.urandom(32)
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 
 upload_folder = './uploads/'
+profileimg_folder = './uploads/profile/'
 
 def connectdb():
     conn = pymysql.connect(host='localhost',
@@ -58,16 +61,72 @@ def signup():
     if request.method =="POST":
         username = request.form['username']
         passwd = request.form['passwd']
+        phonenumber = request.form['phonenumber']
+        email = request.form['email']
+        address = request.form['address']
         conn = connectdb()
         cursor = conn.cursor()
-        query = f"insert into usertable (username, passwd) values ('{username}', '{passwd}');"
-        cursor.execute(query)
-        conn.commit()
-        conn.close()
-        return render_template('login.html')
+        query = f"insert into usertable (username, passwd, phonenumber, email, address) values ('{username}', '{passwd}', '{phonenumber}', '{email}', '{address}');"
+        try:
+            cursor.execute(query)
+            conn.commit()
+            conn.close()
+            return render_template('login.html')
+        except IntegrityError:
+            conn.rollback()  
+            conn.close()
+            return render_template('error_page/signup_error.html')
     else:
         return render_template('signup.html')
-    
+
+@app.route('/uploads/profile/<filename>')
+def profile_image(filename):
+    return send_file(f'./uploads/profile/{filename}')
+
+@app.route('/mypage', methods=['POST', 'GET'])
+def mypage():
+    if 'Hardcore_token' in session:
+        Hardcore_token = session['Hardcore_token']
+        current_username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
+        if request.method =="POST":
+            username = request.form['username']
+            if username == current_username:
+                current_username = current_username
+                email = request.form['email']
+                address = request.form['address']
+                profileimg = request.files['profileimg']
+                conn = connectdb()
+                cursor = conn.cursor()
+                if profileimg:
+                    profileimg.save(profileimg_folder + profileimg.filename)
+                    query = f"update usertable set email='{email}', address='{address}', profileimg='{profileimg.filename}' where username='{current_username}'"
+                else:
+                    query = f"update usertable set email='{email}', address='{address}' where username='{current_username}';"
+                cursor.execute(query)
+                conn.commit()
+                conn.close()
+                return redirect(url_for('mypage'))
+            else:
+                return render_template('error_page/not_your_mypage.html')
+        else:
+            if request.args.get('username'):
+                username = request.args.get('username')
+            else:
+                username = current_username
+            conn = connectdb()
+            cursor = conn.cursor()
+            query = f"select * from usertable where username = '{username}'"
+            cursor.execute(query)
+            mypage_data = cursor.fetchone()
+            if mypage_data[6] == None:
+                profile_img = profileimg_folder + 'defaultprofile.png'
+            else:
+                profile_img = profileimg_folder + mypage_data[6]
+            conn.close()
+            return render_template('mypage.html', mypage_data = mypage_data, profile_img = profile_img)
+    else:
+        return render_template('error_page/loginrequire.html')
+
 @app.route('/change_passwd', methods=['POST', 'GET'])
 def change_passwd():
     if 'Hardcore_token' in session:
@@ -95,6 +154,8 @@ def change_passwd():
 @app.route('/board', methods=['GET'])
 def viewboard():
     if 'Hardcore_token' in session:
+        Hardcore_token = session['Hardcore_token']
+        username = jwt.decode(Hardcore_token, JWT_SECRET_KEY, algorithms=['HS256'])['username']
         conn = connectdb()
         cursor = conn.cursor()
         keyword = request.args.get('keyword', '').strip()
@@ -117,9 +178,8 @@ def viewboard():
             query += ";"
         cursor.execute(query)
         board_data = cursor.fetchall()
-        conn.commit()
         conn.close()
-        return render_template('board.html', board_datas=board_data)
+        return render_template('board.html', board_datas=board_data, username=username)
     else:
         return render_template('error_page/loginrequire.html')
 

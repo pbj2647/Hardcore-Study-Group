@@ -28,12 +28,13 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="text-primary" onclick="location.href='/board'">게시판</h1>
             <div>
+                <a>안녕하세요 {{ username }}님!</a>
                 <button class="btn btn-outline-secondary" onclick="location.href='/logout'">로그아웃</button>
-                <button class="btn btn-outline-primary" onclick="location.href='/change_passwd'">패스워드 변경</button>
+                <button class="btn btn-outline-primary" onclick="location.href='/mypage'">마이페이지</button>
             </div>
         </div>
-        <div class="row mb-4">
-            <div class="col-md-6 d-flex align-items-center">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6 d-flex align-items-center flex-nowrap">
                 <form action="/board" class="w-100 d-flex">
                     <label for="sorting_index" class="me-2">정렬 기준</label>
                     <select id="sorting_index" name="sorting_index" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 120px;">
@@ -44,7 +45,7 @@
                     </select>
                 </form>
             </div>
-            <div class="col-md-6 d-flex align-items-center">
+            <div class="col-md-6 d-flex align-items-center flex-nowrap">
                 <form action="/board" class="w-100 d-flex">
                     <label for="index" class="me-2">검색 기준</label>
                     <select id="index" name="index" class="form-select form-select-sm" style="width: 120px;">
@@ -53,11 +54,11 @@
                         <option value="content">내용</option>
                         <option value="username">작성자</option>
                     </select>
-                    <input type="text" name="keyword" class="form-control form-control-sm ms-2" placeholder="검색어를 입력하세요" style="flex: 2; width: 400px;">
+                    <input type="text" name="keyword" class="form-control form-control-sm ms-2" placeholder="검색어를 입력하세요" style="flex: 1;">
                     <button type="submit" class="btn btn-primary btn-sm ms-2">검색</button>
                 </form>
             </div>
-        </div>
+        </div>        
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>

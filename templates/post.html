@@ -45,7 +45,7 @@
             <div class="post-container">
                 <h1>{{ post_data[1] | safe }}</h1>
                 <div class="post-meta">
-                    <span><strong>작성자:</strong> {{ post_data[2] }}</span><br>
+                    <span onclick="location.href='/mypage?username={{ post_data[2] }}'"><strong>작성자:</strong> {{ post_data[2] }}</span><br>
                     <span><strong>작성 시간:</strong> {{ post_data[5] }}</span>
                 </div>
                 <div class="post-body">
