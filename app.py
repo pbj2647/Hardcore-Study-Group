@@ -3,6 +3,7 @@ from pymysql.err import IntegrityError
 import pymysql
 import jwt
 import os
+import re
 
 app = Flask(__name__)
 app.secret_key = "app_Hardcore"
@@ -88,8 +89,10 @@ def find_username():
         query = f"select username from usertable where phonenumber='{phonenumber}';"
         cursor.execute(query)
         username = cursor.fetchone()
-        print(username)
-        return render_template('alert_page/your_username.html', username=username)
+        if username:
+            return render_template('alert_page/your_username.html', username=username[0])
+        else:
+            return render_template('alert_page/no_username.html')
     else:
         return render_template('find_username.html')
 
@@ -97,10 +100,17 @@ def find_username():
 def find_passwd():
     if request.method =="POST":
         username = request.form['username']
-        passwd = request.form['passwd']
         phonenumber = request.form['phonenumber']
         email = request.form['email']
-        address = request.form['address']
+        conn = connectdb()
+        cursor = conn.cursor()
+        query = f"select passwd from usertable where username='{username}' and phonenumber='{phonenumber}' and email='{email}';"
+        cursor.execute(query)
+        passwd = cursor.fetchone()
+        if passwd:
+            return render_template('alert_page/your_passwd.html', passwd=passwd[0])
+        else:
+            return render_template('alert_page/no_passwd.html')
     else:
         return render_template('find_passwd.html')
 
