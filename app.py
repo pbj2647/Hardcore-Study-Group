@@ -27,7 +27,7 @@ def main():
 
 @app.route('/loginrequire')
 def loginrequire():
-    return render_template('error_page/loginrequire.html')
+    return render_template('alert_page/loginrequire.html')
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -75,9 +75,34 @@ def signup():
         except IntegrityError:
             conn.rollback()  
             conn.close()
-            return render_template('error_page/signup_error.html')
+            return render_template('alert_page/signup_error.html')
     else:
         return render_template('signup.html')
+
+@app.route('/find_username', methods=['POST', 'GET'])
+def find_username():
+    if request.method =="POST":
+        phonenumber = request.form['phonenumber']
+        conn = connectdb()
+        cursor = conn.cursor()
+        query = f"select username from usertable where phonenumber='{phonenumber}';"
+        cursor.execute(query)
+        username = cursor.fetchone()
+        print(username)
+        return render_template('alert_page/your_username.html', username=username)
+    else:
+        return render_template('find_username.html')
+
+@app.route('/find_passwd', methods=['POST', 'GET'])
+def find_passwd():
+    if request.method =="POST":
+        username = request.form['username']
+        passwd = request.form['passwd']
+        phonenumber = request.form['phonenumber']
+        email = request.form['email']
+        address = request.form['address']
+    else:
+        return render_template('find_passwd.html')
 
 @app.route('/uploads/profile/<filename>')
 def profile_image(filename):
@@ -107,7 +132,7 @@ def mypage():
                 conn.close()
                 return redirect(url_for('mypage'))
             else:
-                return render_template('error_page/not_your_mypage.html')
+                return render_template('alert_page/not_your_mypage.html')
         else:
             if request.args.get('username'):
                 username = request.args.get('username')
@@ -125,7 +150,7 @@ def mypage():
             conn.close()
             return render_template('mypage.html', mypage_data = mypage_data, profile_img = profile_img)
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
 
 @app.route('/change_passwd', methods=['POST', 'GET'])
 def change_passwd():
@@ -145,11 +170,11 @@ def change_passwd():
                 return redirect(url_for('viewboard'))
             else:
                 flash('새 비밀번호와 비밀번호 확인이 일치하지 않습니다')
-                return render_template('error_page/passwd_check_error.html')
+                return render_template('alert_page/passwd_check_error.html')
         else:
             return render_template('change_passwd.html') 
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
     
 @app.route('/board', methods=['GET'])
 def viewboard():
@@ -181,7 +206,7 @@ def viewboard():
         conn.close()
         return render_template('board.html', board_datas=board_data, username=username)
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
 
 @app.route('/write', methods=['POST', 'GET'])
 def writepost():
@@ -206,7 +231,7 @@ def writepost():
         else:
             return render_template('write.html')
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
     
 @app.route('/modify', methods=['POST', 'GET'])
 def modify_post():
@@ -232,7 +257,7 @@ def modify_post():
                 conn.close()
                 return redirect(url_for('viewpost', id = post_id))
             else:
-                return render_template('error_page/not_write_user.html', id = post_id)
+                return render_template('alert_page/not_write_user.html', id = post_id)
         else:
             post_id = request.args.get('id')
             conn = connectdb()
@@ -244,7 +269,7 @@ def modify_post():
             conn.close()
             return render_template('modify.html', post_data=post_data) 
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
 
 @app.route('/delete', methods=['POST', 'GET'])
 def delete_post():
@@ -265,12 +290,12 @@ def delete_post():
                 conn.close()
                 return redirect(url_for('viewboard'))
             else:
-                return render_template('error_page/delete_error.html', post_id = post_id)
+                return render_template('alert_page/delete_error.html', post_id = post_id)
         else:
             post_id = request.args.get('id')
             return render_template('delete.html', post_id=post_id) 
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
 
 @app.route('/post', methods=['GET'])
 def viewpost():
@@ -285,7 +310,7 @@ def viewpost():
         conn.close()
         return render_template('post.html', post_data=post_data)
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
     
 @app.route('/post/download', methods=['GET'])
 def download():
@@ -294,7 +319,7 @@ def download():
         file_path = upload_folder + filename
         return send_file(file_path, as_attachment=True)
     else:
-        return render_template('error_page/loginrequire.html')
+        return render_template('alert_page/loginrequire.html')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
