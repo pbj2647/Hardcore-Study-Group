@@ -24,6 +24,10 @@
             </div>
             <input type="hidden" name="post_id" value="{{ post_data[0] }}">
             <input type="hidden" name="username" value="{{ post_data[2] }}">
+            <input class="form-check-input" type="checkbox" value="checked_secret" id="checked_secret" name="checked_secret" {% if post_data[6] == 1 %} checked {% elif post_data[6] == 0 %}  {% endif %}>
+            <label class="form-check-label mb-3" for="flexCheckDefault">
+                비밀글
+            </label>    
             <div class="d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">수정</button>
                 <button type="button" class="btn btn-secondary" onclick="location.href='/post?id={{ post_data[0] }}'">취소</button>

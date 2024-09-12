@@ -1,4 +1,4 @@
-from flask import Flask, request, session, flash, redirect, url_for, send_file, render_template
+from flask import Flask, request, session, redirect, url_for, send_file, make_response, render_template
 from pymysql.err import IntegrityError
 import pymysql
 import jwt
@@ -27,7 +27,7 @@ def main():
     return redirect(url_for('login'))
 
 @app.route('/loginrequire')
-def loginrequire():
+def loginrequire(): 
     return render_template('alert_page/loginrequire.html')
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -179,8 +179,7 @@ def change_passwd():
                 conn.close()
                 return redirect(url_for('viewboard'))
             else:
-                flash('새 비밀번호와 비밀번호 확인이 일치하지 않습니다')
-                return render_template('alert_page/passwd_check_error.html')
+                return render_template('alert_page/changepasswd_error.html')
         else:
             return render_template('change_passwd.html') 
     else:
@@ -227,13 +226,21 @@ def writepost():
             title = request.form['title']
             content = request.form['content']
             file = request.files['file']
+            secret = request.form.get('checked_secret', 0)
             conn = connectdb()
             cursor = conn.cursor()
-            if file:
-                file.save(upload_folder + file.filename)
-                query = f"insert into boardtable (title, content, username, filename) values ('{title}', '{content}', '{username}' ,'{file.filename}');"
+            if secret:
+                if file:
+                    file.save(upload_folder + file.filename)
+                    query = f"insert into boardtable (title, content, username, filename, is_secret) values ('{title}', '{content}', '{username}' ,'{file.filename}', 1);"
+                else:
+                    query = f"insert into boardtable (title, content, username, is_secret) values ('{title}', '{content}', '{username}', 1);"
             else:
-                query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
+                if file:
+                    file.save(upload_folder + file.filename)
+                    query = f"insert into boardtable (title, content, username, filename) values ('{title}', '{content}', '{username}' ,'{file.filename}');"
+                else:
+                    query = f"insert into boardtable (title, content, username) values ('{title}', '{content}', '{username}');"
             cursor.execute(query)
             conn.commit()
             conn.close()
@@ -254,14 +261,22 @@ def modify_post():
             modify_title = request.form['title']
             modify_content = request.form['content']
             modify_file = request.files['file']
+            secret = request.form.get('checked_secret', 0)
             if username == modify_username:
                 conn = connectdb()
                 cursor = conn.cursor()
-                if modify_file:
-                    modify_file.save(upload_folder + modify_file.filename)
-                    query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}' where id = '{post_id}';"
+                if secret:
+                    if modify_file:
+                        modify_file.save(upload_folder + modify_file.filename)
+                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}', is_secret = '1' where id = '{post_id}';"
+                    else:
+                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null, is_secret = '1' where id = '{post_id}';"
                 else:
-                    query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null where id = '{post_id}';"
+                    if modify_file:
+                        modify_file.save(upload_folder + modify_file.filename)
+                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}', is_secret = '0' where id = '{post_id}';"
+                    else:
+                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null, is_secret = '0' where id = '{post_id}';"
                 cursor.execute(query)
                 conn.commit()
                 conn.close()
@@ -307,21 +322,52 @@ def delete_post():
     else:
         return render_template('alert_page/loginrequire.html')
 
-@app.route('/post', methods=['GET'])
+@app.route('/post', methods=['POST', 'GET'])
 def viewpost():
-    if 'Hardcore_token' in session:    
-        post_id = request.args.get('id')
+    if 'Hardcore_token' in session:
         conn = connectdb()
         cursor = conn.cursor()
-        query = f"select * from boardtable where id='{post_id}';"
-        cursor.execute(query)
-        post_data = cursor.fetchone()
-        conn.commit()
-        conn.close()
-        return render_template('post.html', post_data=post_data)
+        if request.method == "GET":    
+            post_id = request.args.get('id')
+            query1 = f"select * from boardtable where id='{post_id}';"
+            cursor.execute(query1)
+            post_data = cursor.fetchone()
+            if post_data[6] == 0:
+                conn.commit()
+                conn.close()
+                return render_template('post.html', post_data=post_data)
+            else:
+                secret_post_cookie = request.cookies.get(f'secret_post_{post_id}')
+                if secret_post_cookie == "checked":
+                    conn.commit()
+                    conn.close()
+                    return render_template('post.html', post_data=post_data)
+                else:
+                    conn.commit()
+                    conn.close()
+                    return render_template('check_passwd.html', post_id=post_id)
+        else:
+            checked_passwd = request.form['passwd']
+            post_id = request.form['post_id']
+            query2 = f"select * from boardtable where id='{post_id}';"
+            cursor.execute(query2)
+            post_data = cursor.fetchone()
+            query3 = f"select passwd from usertable where username='{post_data[2]}';"
+            cursor.execute(query3)
+            userdata = cursor.fetchone()
+            if userdata[0] == checked_passwd:
+                response = make_response(render_template('post.html', post_data=post_data))
+                response.set_cookie(f'secret_post_{post_id}', 'checked', max_age=5*60)
+                conn.commit()
+                conn.close()
+                return response
+            else:
+                conn.commit()
+                conn.close()
+                return render_template('alert_page/wrong_passwd.html')
     else:
         return render_template('alert_page/loginrequire.html')
-    
+   
 @app.route('/post/download', methods=['GET'])
 def download():
     if 'Hardcore_token' in session:
