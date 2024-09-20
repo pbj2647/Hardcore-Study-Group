@@ -226,15 +226,15 @@ def writepost():
             title = request.form['title']
             content = request.form['content']
             file = request.files['file']
-            secret = request.form.get('checked_secret', 0)
+            secret = request.form.get('secret_password')
             conn = connectdb()
             cursor = conn.cursor()
             if secret:
                 if file:
                     file.save(upload_folder + file.filename)
-                    query = f"insert into boardtable (title, content, username, filename, is_secret) values ('{title}', '{content}', '{username}' ,'{file.filename}', 1);"
+                    query = f"insert into boardtable (title, content, username, filename, is_secret) values ('{title}', '{content}', '{username}' ,'{file.filename}', '{secret}');"
                 else:
-                    query = f"insert into boardtable (title, content, username, is_secret) values ('{title}', '{content}', '{username}', 1);"
+                    query = f"insert into boardtable (title, content, username, is_secret) values ('{title}', '{content}', '{username}', '{secret}');"
             else:
                 if file:
                     file.save(upload_folder + file.filename)
@@ -261,22 +261,14 @@ def modify_post():
             modify_title = request.form['title']
             modify_content = request.form['content']
             modify_file = request.files['file']
-            secret = request.form.get('checked_secret', 0)
             if username == modify_username:
                 conn = connectdb()
                 cursor = conn.cursor()
-                if secret:
-                    if modify_file:
-                        modify_file.save(upload_folder + modify_file.filename)
-                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}', is_secret = '1' where id = '{post_id}';"
-                    else:
-                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null, is_secret = '1' where id = '{post_id}';"
+                if modify_file:
+                    modify_file.save(upload_folder + modify_file.filename)
+                    query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}' where id = '{post_id}';"
                 else:
-                    if modify_file:
-                        modify_file.save(upload_folder + modify_file.filename)
-                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = '{modify_file.filename}', is_secret = '0' where id = '{post_id}';"
-                    else:
-                        query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null, is_secret = '0' where id = '{post_id}';"
+                    query = f"update boardtable set title = '{modify_title}', content = '{modify_content}', filename = null where id = '{post_id}';"
                 cursor.execute(query)
                 conn.commit()
                 conn.close()
@@ -331,17 +323,17 @@ def viewpost():
             post_id = request.args.get('id')
             query1 = f"select * from boardtable where id='{post_id}';"
             cursor.execute(query1)
-            post_data = cursor.fetchone()
-            if post_data[6] == 0:
+            post_data1 = cursor.fetchone()
+            if post_data1[6] is None:
                 conn.commit()
                 conn.close()
-                return render_template('post.html', post_data=post_data)
+                return render_template('post.html', post_data=post_data1)
             else:
                 secret_post_cookie = request.cookies.get(f'secret_post_{post_id}')
                 if secret_post_cookie == "checked":
                     conn.commit()
                     conn.close()
-                    return render_template('post.html', post_data=post_data)
+                    return render_template('post.html', post_data=post_data1)
                 else:
                     conn.commit()
                     conn.close()
@@ -351,12 +343,11 @@ def viewpost():
             post_id = request.form['post_id']
             query2 = f"select * from boardtable where id='{post_id}';"
             cursor.execute(query2)
-            post_data = cursor.fetchone()
-            query3 = f"select passwd from usertable where username='{post_data[2]}';"
-            cursor.execute(query3)
-            userdata = cursor.fetchone()
-            if userdata[0] == checked_passwd:
-                response = make_response(render_template('post.html', post_data=post_data))
+            post_data2 = cursor.fetchone()
+            print(post_data2)
+            print(checked_passwd)
+            if post_data2[6] == int(checked_passwd):
+                response = make_response(render_template('post.html', post_data=post_data2))
                 response.set_cookie(f'secret_post_{post_id}', 'checked', max_age=5*60)
                 conn.commit()
                 conn.close()
